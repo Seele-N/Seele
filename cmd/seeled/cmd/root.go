@@ -64,6 +64,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
+	app.SetConfig()
+
 	initRootCmd(rootCmd, encodingConfig)
 	//overwriteFlagDefaults(rootCmd, map[string]string{
 	//	flags.FlagChainID:        ChainID,

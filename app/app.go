@@ -2,6 +2,7 @@ package app
 
 import (
 	"io"
+	"math/big"
 	"os"
 	"path/filepath"
 
@@ -87,7 +88,10 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
-const appName = "Seele"
+const (
+	appName           = "Seele"
+	stakingTokenDenom = "snp"
+)
 
 var (
 	// DefaultNodeHome default home directories for the application daemon
@@ -101,14 +105,12 @@ var (
 		genutil.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
-		staking.AppModuleBasic{},
-		mint.AppModuleBasic{},
+		StakingModuleBasic{},
+		MintModuleBasic{},
 		distr.AppModuleBasic{},
-		gov.NewAppModuleBasic(
-			paramsclient.ProposalHandler, distrclient.ProposalHandler, upgradeclient.ProposalHandler, upgradeclient.CancelProposalHandler,
-		),
+		GovModuleBasic{gov.NewAppModuleBasic(paramsclient.ProposalHandler, distrclient.ProposalHandler, upgradeclient.ProposalHandler, upgradeclient.CancelProposalHandler)},
 		params.AppModuleBasic{},
-		crisis.AppModuleBasic{},
+		CrisisModuleBasic{},
 		slashing.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
@@ -148,6 +150,9 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+appName)
+
+	// PowerReduction is the amount of staking tokens required for 1 unit of consensus-engine power
+	sdk.PowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(2), nil))
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -446,9 +451,11 @@ func (app *App) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Respo
 // InitChainer application update at chain initialization
 func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
+	//fmt.Printf("data %s", (string)(req.AppStateBytes))
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
