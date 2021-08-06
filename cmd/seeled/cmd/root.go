@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/seele-n/seele/app/params"
@@ -60,7 +61,14 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			return server.InterceptConfigsPreRunHandler(cmd)
+			//return server.InterceptConfigsPreRunHandler(cmd)
+			err := server.InterceptConfigsPreRunHandler(cmd)
+			if err == nil {
+				serverCtx := server.GetServerContextFromCmd(cmd)
+				config := serverCtx.Config
+				config.Consensus.TimeoutCommit = 2 * time.Second // force to 2 second for consensus
+			}
+			return err
 		},
 	}
 

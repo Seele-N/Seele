@@ -11,8 +11,8 @@
             "mode": "debug",
             "program": "${file}",
             "buildFlags": "-tags=netgo -buildmode=exe",
-            //"args": ["init", "seele-jesson", "--chain-id", "seelehubv1"] // start;init seele-jesson --chain-id seelehubv1
-            "args": ["keys", "add", "test3"]
+            "args": ["init", "seele-jesson", "--chain-id", "seelehubv1"] // start;init seele-jesson --chain-id seelehubv1
+            //"args": ["keys", "add", "test3"]
         }
     ]
 }
