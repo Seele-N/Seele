@@ -10,6 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "${file}",
+            "env": {"CGO_ENABLED": 0},
             "buildFlags": "-tags=netgo -buildmode=exe",
             "args": ["init", "seele-jesson", "--chain-id", "seelehubv1"] // start;init seele-jesson --chain-id seelehubv1
             //"args": ["keys", "add", "test3"]
