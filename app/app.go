@@ -2,13 +2,11 @@ package app
 
 import (
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/gorilla/mux"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -396,8 +394,6 @@ func New(
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(seeletypes.RouterKey, seele.NewTokenMappingChangeProposalHandler(app.SeeleKeeper))
 
-	// Set IBC hooks
-	app.TransferKeeper = *app.TransferKeeper.SetHooks(app.SeeleKeeper)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
 
 	app.GovKeeper = govkeeper.NewKeeper(
