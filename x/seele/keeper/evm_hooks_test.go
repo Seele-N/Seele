@@ -169,9 +169,9 @@ func (suite *KeeperTestSuite) TestEvmHooks() {
 					keepertest.IbcKeeperMock{},
 					suite.app.EvmKeeper,
 				)
-				suite.app.CronosKeeper = cronosKeeper
+				suite.app.SeeleKeeper = seeleKeeper
 
-				suite.app.CronosKeeper.SetExternalContractForDenom(suite.ctx, denom, contract)
+				suite.app.SeeleKeeper.SetExternalContractForDenom(suite.ctx, denom, contract)
 				coin := sdk.NewCoin(denom, sdk.NewInt(100))
 				err := suite.MintCoins(sdk.AccAddress(contract.Bytes()), sdk.NewCoins(coin))
 				suite.Require().NoError(err)

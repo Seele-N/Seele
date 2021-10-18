@@ -3,10 +3,10 @@ package mintx
 import (
 	"time"
 
+	"github.com/Seele-N/Seele/x/mintx/keeper"
+	"github.com/Seele-N/Seele/x/mintx/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/seele-n/seele/x/mintx/keeper"
-	"github.com/seele-n/seele/x/mintx/types"
 )
 
 // BeginBlocker mints new tokens for the previous block.

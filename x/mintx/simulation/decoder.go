@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/Seele-N/Seele/x/mintx/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/kv"
-	"github.com/seele-n/seele/x/mintx/types"
 )
 
 // NewDecodeStore returns a decoder function closure that umarshals the KVPair's

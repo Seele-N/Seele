@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Seele-N/Seele/x/mintx/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/seele-n/seele/x/mintx/types"
 )
 
 // GetQueryCmd returns the cli query commands for the minting module.

@@ -1,9 +1,9 @@
 package mintx
 
 import (
+	"github.com/Seele-N/Seele/x/mintx/keeper"
+	"github.com/Seele-N/Seele/x/mintx/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/seele-n/seele/x/mintx/keeper"
-	"github.com/seele-n/seele/x/mintx/types"
 )
 
 // InitGenesis new mint genesis

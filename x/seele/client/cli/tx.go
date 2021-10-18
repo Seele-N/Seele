@@ -75,7 +75,7 @@ func CmdConvertTokens() *cobra.Command {
 func CmdSendToCryptoOrg() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "transfer-tokens [from] [to] [amount]",
-		Short: "Transfer cronos tokens to the origin chain through IBC , Note, the'--from' flag is" +
+		Short: "Transfer seele tokens to the origin chain through IBC , Note, the'--from' flag is" +
 			" ignored as it is implied from [from].`",
 		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {

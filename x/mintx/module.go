@@ -17,11 +17,11 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/seele-n/seele/x/mintx/client/cli"
-	"github.com/seele-n/seele/x/mintx/client/rest"
-	"github.com/seele-n/seele/x/mintx/keeper"
-	"github.com/seele-n/seele/x/mintx/simulation"
-	"github.com/seele-n/seele/x/mintx/types"
+	"github.com/Seele-N/Seele/x/mintx/client/cli"
+	"github.com/Seele-N/Seele/x/mintx/client/rest"
+	"github.com/Seele-N/Seele/x/mintx/keeper"
+	"github.com/Seele-N/Seele/x/mintx/simulation"
+	"github.com/Seele-N/Seele/x/mintx/types"
 )
 
 var (

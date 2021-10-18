@@ -8,7 +8,7 @@ import (
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/seele-n/seele/x/mintx/types"
+	"github.com/Seele-N/Seele/x/mintx/types"
 )
 
 // Keeper of the mint store

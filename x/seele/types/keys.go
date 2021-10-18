@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName defines the module name
-	ModuleName = "cronos"
+	ModuleName = "seele"
 
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
@@ -14,12 +14,12 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_cronos"
+	MemStoreKey = "mem_seele"
 
 	// this line is used by starport scaffolding # ibc/keys/name
 )
 
-// prefix bytes for the cronos persistent store
+// prefix bytes for the seele persistent store
 const (
 	prefixDenomToExternalContract = iota + 1
 	prefixDenomToAutoContract

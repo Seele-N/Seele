@@ -312,7 +312,7 @@ func (suite *KeeperTestSuite) TestSendCroToIbcHandler() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			suite.SetupTest()
-			// Create Cronos Keeper with mock transfer keeper
+			// Create Seele Keeper with mock transfer keeper
 			seeleKeeper := *seelemodulekeeper.NewKeeper(
 				app.MakeEncodingConfig().Marshaler,
 				suite.app.GetKey(types.StoreKey),
