@@ -232,6 +232,7 @@ func (suite *KeeperTestSuite) TestSendToIbcHandler() {
 				suite.app.GetSubspace(types.ModuleName),
 				suite.app.BankKeeper,
 				keepertest.IbcKeeperMock{},
+				suite.app.GravityKeeper,
 				suite.app.EvmKeeper,
 			)
 			handler := keeper.NewSendToIbcHandler(suite.app.BankKeeper, seeleKeeper)
@@ -320,6 +321,7 @@ func (suite *KeeperTestSuite) TestSendCroToIbcHandler() {
 				suite.app.GetSubspace(types.ModuleName),
 				suite.app.BankKeeper,
 				keepertest.IbcKeeperMock{},
+				suite.app.GravityKeeper,
 				suite.app.EvmKeeper,
 			)
 			handler := keeper.NewSendCroToIbcHandler(suite.app.BankKeeper, seeleKeeper)

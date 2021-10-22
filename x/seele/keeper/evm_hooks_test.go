@@ -167,6 +167,7 @@ func (suite *KeeperTestSuite) TestEvmHooks() {
 					suite.app.GetSubspace(types.ModuleName),
 					suite.app.BankKeeper,
 					keepertest.IbcKeeperMock{},
+					suite.app.GravityKeeper,
 					suite.app.EvmKeeper,
 				)
 				suite.app.SeeleKeeper = seeleKeeper

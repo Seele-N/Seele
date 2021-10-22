@@ -6,16 +6,27 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+
 	"github.com/Seele-N/Seele/x/mintx"
 	mintxtypes "github.com/Seele-N/Seele/x/mintx/types"
+
+	"github.com/tharsis/ethermint/x/evm"
+	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+
+	"github.com/peggyjv/gravity-bridge/module/x/gravity"
+	gravitytypes "github.com/peggyjv/gravity-bridge/module/x/gravity/types"
 )
 
 const (
@@ -30,12 +41,18 @@ const (
 
 // staking
 const (
-	// DefaultUnbondingTime reflects three weeks in seconds as the default
+	// DefaultUnbondingTime reflects 30 days in seconds as the default
 	// unbonding time.
-	DefaultUnbondingTime = 21 * Day
+	DefaultUnbondingTime = 30 * Day
 
 	// DefaultMaxValidators Default maximum number of bonded validators
 	DefaultMaxValidators uint32 = 21
+)
+
+// slashinging
+const (
+	// DefaultSignedBlocksWindow reflects signed blocks window
+	DefaultSignedBlocksWindow = 10000
 )
 
 // Crisis
@@ -47,7 +64,7 @@ var (
 // gov
 var (
 	// DefaultGovMinDepositAmount Default Gov Min Deposit Amount
-	DefaultGovMinDepositAmount = sdk.NewInt(10000000)
+	DefaultGovMinDepositAmount = sdk.NewInt(1000000000000000000)
 )
 
 // gov
@@ -58,9 +75,12 @@ const (
 	VotingPeriod = 7 * Day
 )
 
-// mint
+// gravity
 const (
-	BlocksPerYear = 6311520
+	// DefaultPeriod Default period for deposits & voting
+	DefaultGravityId             = "seele_bridge"
+	DefaultBridgeEthereumAddress = "0xCad5A42d74F66d96650fdf1a1b1d738DeDB7d876"
+	DefaultWindowTime            = 3144960
 )
 
 // StakingModuleBasic staking module basic replace
@@ -74,6 +94,19 @@ func (StakingModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	genesisState.Params.UnbondingTime = DefaultUnbondingTime
 	genesisState.Params.MaxValidators = DefaultMaxValidators
 	genesisState.Params.BondDenom = DefaultBondDenom
+	return cdc.MustMarshalJSON(genesisState)
+}
+
+// SlashingModuleBasic slashing module basic replace
+type SlashingModuleBasic struct {
+	slashing.AppModuleBasic
+}
+
+// DefaultGenesis defaut genesis for extend params
+func (SlashingModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	genesisState := slashingtypes.DefaultGenesisState()
+	genesisState.Params.SignedBlocksWindow = DefaultSignedBlocksWindow
+	//genesisState.Params.SlashFractionDowntime = sdk.NewDecWithPrec(1, 2)
 	return cdc.MustMarshalJSON(genesisState)
 }
 
@@ -107,6 +140,46 @@ func (GovModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 		Threshold:     sdk.NewDecWithPrec(5, 1),   // Minimum proportion of Yes votes for proposal to pass. Default value: 0.5.
 		VetoThreshold: sdk.NewDecWithPrec(334, 3), //  Minimum value of Veto votes to Total votes ratio for proposal to be vetoed. Default value: 1/3.
 	}
+	return cdc.MustMarshalJSON(genesisState)
+}
+
+// EvmModuleBasic evm module basic replace
+type EvmModuleBasic struct {
+	evm.AppModuleBasic
+}
+
+// DefaultGenesis defaut genesis for extend params
+func (EvmModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	genesisState := evmtypes.DefaultGenesisState()
+	genesisState.Params.EvmDenom = DefaultMintDenom
+	return cdc.MustMarshalJSON(genesisState)
+}
+
+// GravityModuleBasic gravity bridge module basic replace
+type GravityModuleBasic struct {
+	gravity.AppModuleBasic
+}
+
+// DefaultGenesis defaut genesis for extend params
+func (GravityModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	genesisState := gravitytypes.DefaultGenesisState()
+	genesisState.Params.GravityId = DefaultGravityId
+	genesisState.Params.BridgeEthereumAddress = DefaultBridgeEthereumAddress
+	genesisState.Params.SignedBatchesWindow = DefaultWindowTime
+	genesisState.Params.UnbondSlashingSignerSetTxsWindow = DefaultWindowTime
+	var items []*gravitytypes.ERC20ToDenom
+	item := &gravitytypes.ERC20ToDenom{
+		Erc20: "0x795dbf627484f8248d3d6c09c309825c1563e873",
+		Denom: "snp",
+	}
+	items = append(items, item)
+	item = &gravitytypes.ERC20ToDenom{
+		Erc20: "0xB1e93236ab6073fdAC58adA5564897177D4bcC43",
+		Denom: "seele",
+	}
+	items = append(items, item)
+	genesisState.Erc20ToDenoms = items
+	//genesisState.Params.BridgeChainId
 	return cdc.MustMarshalJSON(genesisState)
 }
 

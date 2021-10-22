@@ -9,6 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+var Precision_Mul = sdk.NewDec(10).Power(18)
+
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
@@ -22,6 +24,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	rewardAmount := params.GetRewardByHeight(uint64(ctx.BlockHeight()))
 
+	rewardAmount = rewardAmount.Mul(Precision_Mul)
+	//rewardAmount.
 	// mint coins
 	mintedCoin := sdk.NewCoin(params.MintDenom, rewardAmount.TruncateInt())
 	mintedCoins := sdk.NewCoins(mintedCoin)
