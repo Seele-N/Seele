@@ -26,7 +26,7 @@ func (k Keeper) CallEVM(ctx sdk.Context, to *common.Address, data []byte, value 
 		nonce,
 		value, // amount
 		config.DefaultGasCap,
-		big.NewInt(0), // gasPrice
+		big.NewInt(1000000000), // gasPrice
 		data,
 		nil,   // accessList
 		false, // checkNonce
@@ -73,7 +73,7 @@ func (k Keeper) CallModuleCRC20(ctx sdk.Context, contract common.Address, method
 
 // DeployModuleCRC20 deploy an embed erc20 contract
 func (k Keeper) DeployModuleCRC20(ctx sdk.Context, denom string) (common.Address, error) {
-	ctor, err := types.ModuleCRC20Contract.ABI.Pack("", denom, uint8(0))
+	ctor, err := types.ModuleCRC20Contract.ABI.Pack("", denom+" Token", denom, uint8(18))
 	if err != nil {
 		return common.Address{}, err
 	}

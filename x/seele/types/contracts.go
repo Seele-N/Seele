@@ -55,7 +55,7 @@ var (
 
 func init() {
 	EVMModuleAddress = common.BytesToAddress(authtypes.NewModuleAddress(EVMModuleName).Bytes())
-
+	fmt.Printf("seele-evm module address:%s\n", EVMModuleAddress.String())
 	err := json.Unmarshal(seeleCRC20JSON, &ModuleCRC20Contract)
 	if err != nil {
 		panic(err)

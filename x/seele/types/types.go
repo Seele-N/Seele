@@ -30,5 +30,5 @@ func IsValidGravityDenom(denom string) bool {
 // IsValidDenomToWrap returns if it's ok to wrap the native denom in erc20
 // Currently only supports ibc and gravity denom
 func IsValidDenomToWrap(denom string) bool {
-	return IsValidIBCDenom(denom) || IsValidGravityDenom(denom)
+	return IsValidIBCDenom(denom) || IsValidGravityDenom(denom) || denom == "snp"
 }

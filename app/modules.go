@@ -169,7 +169,7 @@ func (GravityModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	genesisState.Params.UnbondSlashingSignerSetTxsWindow = DefaultWindowTime
 	var items []*gravitytypes.ERC20ToDenom
 	item := &gravitytypes.ERC20ToDenom{
-		Erc20: "0x795dbf627484f8248d3d6c09c309825c1563e873",
+		Erc20: "0x795dBF627484F8248D3d6c09c309825c1563E873",
 		Denom: "snp",
 	}
 	items = append(items, item)

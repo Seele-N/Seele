@@ -152,4 +152,4 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.33.2
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
-replace github.com/peggyjv/gravity-bridge/module => github.com/Seele-N/gravity-bridge/module v0.2.21
+replace github.com/peggyjv/gravity-bridge/module => github.com/Seele-N/gravity-bridge/module v0.2.23
