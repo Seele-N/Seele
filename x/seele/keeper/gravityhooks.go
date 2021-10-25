@@ -45,7 +45,7 @@ func (k Keeper) doAfterSendToCosmosEvent(ctx sdk.Context, event gravitytypes.Sen
 	*/
 	// Use auto deploy here for testing.
 	// FIXME update after gov feature is implemented: https://github.com/Seele-N/Seele/issues/46
-	err := k.ConvertCoinFromNativeToCRC20(ctx, addr, sdk.NewCoin(denom, event.Amount), true)
+	err := k.ConvertCoinFromNativeToSRC20(ctx, addr, sdk.NewCoin(denom, event.Amount), true)
 	if err != nil {
 		return err
 	}

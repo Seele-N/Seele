@@ -12,7 +12,7 @@ func (suite *KeeperTestSuite) TestDeployContract() {
 	suite.SetupTest()
 	keeper := suite.app.SeeleKeeper
 
-	_, err := keeper.DeployModuleCRC20(suite.ctx, "test")
+	_, err := keeper.DeployModuleSRC20(suite.ctx, "test")
 	suite.Require().NoError(err)
 }
 
@@ -35,30 +35,30 @@ func (suite *KeeperTestSuite) TestTokenConversion() {
 	suite.Require().NoError(err)
 
 	// send to erc20
-	err = keeper.ConvertCoinsFromNativeToCRC20(suite.ctx, address, coins, true)
+	err = keeper.ConvertCoinsFromNativeToSRC20(suite.ctx, address, coins, true)
 	suite.Require().NoError(err)
 
 	// check erc20 balance
 	contract, found := keeper.GetContractByDenom(suite.ctx, denom)
 	suite.Require().True(found)
 
-	ret, err := keeper.CallModuleCRC20(suite.ctx, contract, "balanceOf", address)
+	ret, err := keeper.CallModuleSRC20(suite.ctx, contract, "balanceOf", address)
 	suite.Require().NoError(err)
 	suite.Require().Equal(amount, big.NewInt(0).SetBytes(ret))
 
-	ret, err = keeper.CallModuleCRC20(suite.ctx, contract, "totalSupply")
+	ret, err = keeper.CallModuleSRC20(suite.ctx, contract, "totalSupply")
 	suite.Require().NoError(err)
 	suite.Require().Equal(amount, big.NewInt(0).SetBytes(ret))
 
 	// convert back to native
-	err = keeper.ConvertCoinFromCRC20ToNative(suite.ctx, contract, address, coins[0].Amount)
+	err = keeper.ConvertCoinFromSRC20ToNative(suite.ctx, contract, address, coins[0].Amount)
 	suite.Require().NoError(err)
 
-	ret, err = keeper.CallModuleCRC20(suite.ctx, contract, "balanceOf", address)
+	ret, err = keeper.CallModuleSRC20(suite.ctx, contract, "balanceOf", address)
 	suite.Require().NoError(err)
 	suite.Require().Equal(0, big.NewInt(0).Cmp(big.NewInt(0).SetBytes(ret)))
 
-	ret, err = keeper.CallModuleCRC20(suite.ctx, contract, "totalSupply")
+	ret, err = keeper.CallModuleSRC20(suite.ctx, contract, "totalSupply")
 	suite.Require().NoError(err)
 	suite.Require().Equal(0, big.NewInt(0).Cmp(big.NewInt(0).SetBytes(ret)))
 

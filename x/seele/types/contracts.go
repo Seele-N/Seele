@@ -43,11 +43,11 @@ type CompiledContract struct {
 const EVMModuleName = "seele-evm"
 
 var (
-	//go:embed contracts/ModuleCRC20.json
-	seeleCRC20JSON []byte
+	//go:embed contracts/ModuleSRC20.json
+	seeleERC20JSON []byte
 
-	// ModuleCRC20Contract is the compiled seele erc20 contract
-	ModuleCRC20Contract CompiledContract
+	// ModuleSRC20Contract is the compiled seele erc20 contract
+	ModuleSRC20Contract CompiledContract
 
 	// EVMModuleAddress is the native module address for EVM
 	EVMModuleAddress common.Address
@@ -56,12 +56,12 @@ var (
 func init() {
 	EVMModuleAddress = common.BytesToAddress(authtypes.NewModuleAddress(EVMModuleName).Bytes())
 	fmt.Printf("seele-evm module address:%s\n", EVMModuleAddress.String())
-	err := json.Unmarshal(seeleCRC20JSON, &ModuleCRC20Contract)
+	err := json.Unmarshal(seeleERC20JSON, &ModuleSRC20Contract)
 	if err != nil {
 		panic(err)
 	}
 
-	if len(ModuleCRC20Contract.Bin) == 0 {
+	if len(ModuleSRC20Contract.Bin) == 0 {
 		panic("load contract failed")
 	}
 }
