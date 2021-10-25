@@ -26,7 +26,7 @@ func (k Keeper) CallEVM(ctx sdk.Context, to *common.Address, data []byte, value 
 		nonce,
 		value, // amount
 		config.DefaultGasCap,
-		big.NewInt(1000000000), // gasPrice
+		big.NewInt(0), // gasPrice
 		data,
 		nil,   // accessList
 		false, // checkNonce
