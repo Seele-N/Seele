@@ -9,6 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/Seele-N/Seele/x/seele/types"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var (
@@ -16,6 +18,8 @@ var (
 	_ types.EvmLogHandler = SendToEthereumHandler{}
 	_ types.EvmLogHandler = SendToIbcHandler{}
 	_ types.EvmLogHandler = SendCroToIbcHandler{}
+
+	_ types.EvmLogHandler = SendSnpStakeHandler{}
 )
 
 const (
@@ -23,6 +27,8 @@ const (
 	SendToEthereumEventName = "__SeeleSendToEthereum"
 	SendToIbcEventName      = "__SeeleSendToIbc"
 	SendCroToIbcEventName   = "__SeeleSendSeeleToIbc"
+
+	SnpStakingEventName = "Snp_Staking"
 )
 
 var (
@@ -38,9 +44,13 @@ var (
 	// `event __SeeleSendToIbc(string recipient, uint256 amount)`
 	SendToIbcEvent abi.Event
 
-	// SendCroToIbcEvent represent the signature of
+	// SnpStakingEvent represent the signature of
 	// `event __SeeleSendSeeleToIbc(string recipient, uint256 amount)`
 	SendCroToIbcEvent abi.Event
+
+	// SnpStakeEvent represent the signature of
+	// `event Snp_Staking(address validator, address delegator,uint256 amount)`
+	SnpStakeEvent abi.Event
 )
 
 func init() {
@@ -115,8 +125,99 @@ func init() {
 			Indexed: false,
 		}},
 	)
+
+	SnpStakeEvent = abi.NewEvent(
+		SnpStakingEventName,
+		SnpStakingEventName,
+		false,
+		abi.Arguments{abi.Argument{
+			Name:    "validator",
+			Type:    addressType,
+			Indexed: false,
+		}, abi.Argument{
+			Name:    "delegator",
+			Type:    addressType,
+			Indexed: false,
+		}, abi.Argument{
+			Name:    "amount",
+			Type:    uint256Type,
+			Indexed: false,
+		}},
+	)
 }
 
+// SendSnpStakeHandler handles `Snp_Staking` log
+type SendSnpStakeHandler struct {
+	bankKeeper    types.BankKeeper
+	stakingKeeper types.StakingKeeper
+	seeleKeeper   Keeper
+}
+
+func NewSendSnpStakeHandler(bankKeeper types.BankKeeper, stakingKeeper types.StakingKeeper, seeleKeeper Keeper) *SendSnpStakeHandler {
+	return &SendSnpStakeHandler{
+		bankKeeper:    bankKeeper,
+		stakingKeeper: stakingKeeper,
+		seeleKeeper:   seeleKeeper,
+	}
+}
+
+func (h SendSnpStakeHandler) EventID() common.Hash {
+	return SnpStakeEvent.ID
+}
+
+func (h SendSnpStakeHandler) Handle(ctx sdk.Context, contract common.Address, data []byte) error {
+	h.seeleKeeper.Logger(ctx).Info("SendSnpStakeHandler")
+	unpacked, err := SnpStakeEvent.Inputs.Unpack(data)
+	if err != nil {
+		// log and ignore
+		h.seeleKeeper.Logger(ctx).Error("log signature matches but failed to decode", "error", err)
+		return nil
+	}
+	h.seeleKeeper.Logger(ctx).Info("Event from contract:" + contract.Hex())
+	h.seeleKeeper.Logger(ctx).Info("validator:" + unpacked[0].(common.Address).Hex())
+	h.seeleKeeper.Logger(ctx).Info("delegator:" + unpacked[1].(common.Address).Hex())
+	h.seeleKeeper.Logger(ctx).Info("amount:" + unpacked[2].(*big.Int).String())
+
+	amount := unpacked[2].(*big.Int)
+	valAddress := sdk.ValAddress(unpacked[0].(common.Address).Bytes())
+	h.seeleKeeper.Logger(ctx).Info("valAddress:" + valAddress.String())
+	validator, found := h.stakingKeeper.GetValidator(ctx, valAddress)
+	if !found {
+		return stakingtypes.ErrNoValidatorFound
+	}
+	delegator := sdk.AccAddress(unpacked[1].(common.Address).Bytes())
+	coin := sdk.NewCoin("snp", sdk.NewIntFromBigInt(amount))
+	h.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(coin))
+	h.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, delegator, sdk.NewCoins(coin))
+	newShares, err := h.stakingKeeper.Delegate(ctx, delegator, sdk.NewIntFromBigInt(amount), stakingtypes.Unbonded, validator, true)
+	if err != nil {
+		return err
+	}
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			stakingtypes.EventTypeDelegate,
+			sdk.NewAttribute(stakingtypes.AttributeKeyValidator, valAddress.String()),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, amount.String()),
+			sdk.NewAttribute(stakingtypes.AttributeKeyNewShares, newShares.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, delegator.String()),
+		),
+	})
+	//contractAddr := sdk.AccAddress(contract.Bytes())
+	//recipient := sdk.AccAddress(unpacked[0].(common.Address).Bytes())
+	//coins := sdk.NewCoins(sdk.NewCoin(denom, sdk.NewIntFromBigInt(unpacked[1].(*big.Int))))
+	//err = h.bankKeeper.SendCoins(ctx, contractAddr, recipient, coins)
+	//if err != nil {
+	//	return err
+	//}
+
+	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SendToAccountHandler handles `__SeeleSendToAccount` log
 type SendToAccountHandler struct {
 	bankKeeper  types.BankKeeper

@@ -46,6 +46,7 @@ func (suite *KeeperTestSuite) TestGetSourceChannelID() {
 				keepertest.IbcKeeperMock{},
 				suite.app.GravityKeeper,
 				suite.app.EvmKeeper,
+				suite.app.StakingKeeper,
 			)
 			suite.app.SeeleKeeper = seeleKeeper
 

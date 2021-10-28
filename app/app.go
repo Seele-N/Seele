@@ -414,6 +414,7 @@ func New(
 		app.TransferKeeper,
 		gravityKeeper,
 		app.EvmKeeper,
+		app.StakingKeeper,
 	)
 	seeleModule := seele.NewAppModule(appCodec, app.SeeleKeeper)
 
@@ -440,6 +441,7 @@ func New(
 		seelekeeper.NewSendToEthereumHandler(app.SeeleKeeper),
 		seelekeeper.NewSendToIbcHandler(app.BankKeeper, app.SeeleKeeper),
 		seelekeeper.NewSendCroToIbcHandler(app.BankKeeper, app.SeeleKeeper),
+		seelekeeper.NewSendSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
 	))
 
 	// register the staking hooks

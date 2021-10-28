@@ -33,6 +33,9 @@ type (
 		// ethermint evm keeper
 		evmKeeper *evmkeeper.Keeper
 
+		// delegate operations with coins
+		stakingKeeper types.StakingKeeper
+
 		// this line is used by starport scaffolding # ibc/keeper/attribute
 	}
 )
@@ -46,6 +49,7 @@ func NewKeeper(
 	transferKeeper types.TransferKeeper,
 	gravityKeeper types.GravityKeeper,
 	evmKeeper *evmkeeper.Keeper,
+	stakingKeeper types.StakingKeeper,
 	// this line is used by starport scaffolding # ibc/keeper/parameter
 ) *Keeper {
 
@@ -63,6 +67,7 @@ func NewKeeper(
 		transferKeeper: transferKeeper,
 		gravityKeeper:  gravityKeeper,
 		evmKeeper:      evmKeeper,
+		stakingKeeper:  stakingKeeper,
 		// this line is used by starport scaffolding # ibc/keeper/return
 	}
 }

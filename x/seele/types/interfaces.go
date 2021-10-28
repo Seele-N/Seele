@@ -7,6 +7,8 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/modules/core/02-client/types"
 	"github.com/ethereum/go-ethereum/common"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // BankKeeper defines the expected interface needed to retrieve account balances.
@@ -17,6 +19,13 @@ type BankKeeper interface {
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	SendCoins(ctx sdk.Context, senderAddr sdk.AccAddress, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+}
+
+// StakingKeeper defines the expected interface needed to stake/unstake.
+type StakingKeeper interface {
+	GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator stakingtypes.Validator, found bool)
+	Delegate(ctx sdk.Context, delAddr sdk.AccAddress, bondAmt sdk.Int, tokenSrc stakingtypes.BondStatus,
+		validator stakingtypes.Validator, subtractAccount bool) (newShares sdk.Dec, err error)
 }
 
 // TransferKeeper defines the expected interface needed to transfer coin through IBC.
