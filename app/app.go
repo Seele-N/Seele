@@ -436,14 +436,6 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 
-	app.EvmKeeper.SetHooks(seelekeeper.NewLogProcessEvmHook(
-		seelekeeper.NewSendToAccountHandler(app.BankKeeper, app.SeeleKeeper),
-		seelekeeper.NewSendToEthereumHandler(app.SeeleKeeper),
-		seelekeeper.NewSendToIbcHandler(app.BankKeeper, app.SeeleKeeper),
-		seelekeeper.NewSendCroToIbcHandler(app.BankKeeper, app.SeeleKeeper),
-		seelekeeper.NewSendSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
-	))
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -452,6 +444,12 @@ func New(
 			app.SlashingKeeper.Hooks(),
 		),
 	)
+
+	app.EvmKeeper.SetHooks(seelekeeper.NewLogProcessEvmHook(
+		seelekeeper.NewSendSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
+		seelekeeper.NewSendUnSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
+		seelekeeper.NewSendSnpClaimRewardHandler(app.BankKeeper, app.DistrKeeper, app.SeeleKeeper),
+	))
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()

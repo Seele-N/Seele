@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"math/big"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -20,6 +21,8 @@ var (
 	_ types.EvmLogHandler = SendCroToIbcHandler{}
 
 	_ types.EvmLogHandler = SendSnpStakeHandler{}
+	_ types.EvmLogHandler = SendUnSnpStakeHandler{}
+	_ types.EvmLogHandler = SendSnpClaimRewardHandler{}
 )
 
 const (
@@ -28,7 +31,9 @@ const (
 	SendToIbcEventName      = "__SeeleSendToIbc"
 	SendCroToIbcEventName   = "__SeeleSendSeeleToIbc"
 
-	SnpStakingEventName = "Snp_Staking"
+	SnpStakingEventName     = "Snp_Staking"
+	SnpUnStakingEventName   = "Snp_UnStaking"
+	SnpClaimRewardEventName = "Snp_ClaimReward"
 )
 
 var (
@@ -51,6 +56,14 @@ var (
 	// SnpStakeEvent represent the signature of
 	// `event Snp_Staking(address validator, address delegator,uint256 amount)`
 	SnpStakeEvent abi.Event
+
+	// SnpUnStakeEvent represent the signature of
+	// `event Snp_UnStaking(address validator, address delegator,uint256 amount)`
+	SnpUnStakeEvent abi.Event
+
+	// SnpClaimRewardEvent represent the signature of
+	// `event Snp_ClaimReward(address validator, address delegator)`
+	SnpClaimRewardEvent abi.Event
 )
 
 func init() {
@@ -144,6 +157,40 @@ func init() {
 			Indexed: false,
 		}},
 	)
+
+	SnpUnStakeEvent = abi.NewEvent(
+		SnpUnStakingEventName,
+		SnpUnStakingEventName,
+		false,
+		abi.Arguments{abi.Argument{
+			Name:    "validator",
+			Type:    addressType,
+			Indexed: false,
+		}, abi.Argument{
+			Name:    "delegator",
+			Type:    addressType,
+			Indexed: false,
+		}, abi.Argument{
+			Name:    "amount",
+			Type:    uint256Type,
+			Indexed: false,
+		}},
+	)
+
+	SnpClaimRewardEvent = abi.NewEvent(
+		SnpClaimRewardEventName,
+		SnpClaimRewardEventName,
+		false,
+		abi.Arguments{abi.Argument{
+			Name:    "validator",
+			Type:    addressType,
+			Indexed: false,
+		}, abi.Argument{
+			Name:    "delegator",
+			Type:    addressType,
+			Indexed: false,
+		}},
+	)
 }
 
 // SendSnpStakeHandler handles `Snp_Staking` log
@@ -171,7 +218,7 @@ func (h SendSnpStakeHandler) Handle(ctx sdk.Context, contract common.Address, da
 	if err != nil {
 		// log and ignore
 		h.seeleKeeper.Logger(ctx).Error("log signature matches but failed to decode", "error", err)
-		return nil
+		return err
 	}
 	h.seeleKeeper.Logger(ctx).Info("Event from contract:" + contract.Hex())
 	h.seeleKeeper.Logger(ctx).Info("validator:" + unpacked[0].(common.Address).Hex())
@@ -218,6 +265,137 @@ func (h SendSnpStakeHandler) Handle(ctx sdk.Context, contract common.Address, da
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// SendUnSnpStakeHandler handles `Snp_Staking` log
+type SendUnSnpStakeHandler struct {
+	bankKeeper    types.BankKeeper
+	stakingKeeper types.StakingKeeper
+	seeleKeeper   Keeper
+}
+
+func NewSendUnSnpStakeHandler(bankKeeper types.BankKeeper, stakingKeeper types.StakingKeeper, seeleKeeper Keeper) *SendUnSnpStakeHandler {
+	return &SendUnSnpStakeHandler{
+		bankKeeper:    bankKeeper,
+		stakingKeeper: stakingKeeper,
+		seeleKeeper:   seeleKeeper,
+	}
+}
+
+func (h SendUnSnpStakeHandler) EventID() common.Hash {
+	return SnpUnStakeEvent.ID
+}
+
+func (h SendUnSnpStakeHandler) Handle(ctx sdk.Context, contract common.Address, data []byte) error {
+	h.seeleKeeper.Logger(ctx).Info("SendUnSnpStakeHandler")
+	unpacked, err := SnpUnStakeEvent.Inputs.Unpack(data)
+	if err != nil {
+		// log and ignore
+		h.seeleKeeper.Logger(ctx).Error("log signature matches but failed to decode", "error", err)
+		return err
+	}
+	h.seeleKeeper.Logger(ctx).Info("Event from contract:" + contract.Hex())
+	h.seeleKeeper.Logger(ctx).Info("validator:" + unpacked[0].(common.Address).Hex())
+	h.seeleKeeper.Logger(ctx).Info("delegator:" + unpacked[1].(common.Address).Hex())
+	h.seeleKeeper.Logger(ctx).Info("amount:" + unpacked[2].(*big.Int).String())
+
+	amount := unpacked[2].(*big.Int)
+	valAddress := sdk.ValAddress(unpacked[0].(common.Address).Bytes())
+	delegator := sdk.AccAddress(unpacked[1].(common.Address).Bytes())
+	h.seeleKeeper.Logger(ctx).Info("valAddress:" + valAddress.String())
+	shares, err := h.stakingKeeper.ValidateUnbondAmount(ctx, delegator, valAddress, sdk.NewIntFromBigInt(amount))
+	if err != nil {
+		return err
+	}
+
+	completionTime, err := h.stakingKeeper.Undelegate(ctx, delegator, valAddress, shares)
+	if err != nil {
+		return err
+	}
+
+	//coin := sdk.NewCoin("snp", sdk.NewIntFromBigInt(amount))
+	//h.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(coin))
+	//h.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, delegator, sdk.NewCoins(coin))
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			stakingtypes.EventTypeUnbond,
+			sdk.NewAttribute(stakingtypes.AttributeKeyValidator, valAddress.String()),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, amount.String()),
+			sdk.NewAttribute(stakingtypes.AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, delegator.String()),
+		),
+	})
+
+	//contractAddr := sdk.AccAddress(contract.Bytes())
+	//recipient := sdk.AccAddress(unpacked[0].(common.Address).Bytes())
+	//coins := sdk.NewCoins(sdk.NewCoin(denom, sdk.NewIntFromBigInt(unpacked[1].(*big.Int))))
+	//err = h.bankKeeper.SendCoins(ctx, contractAddr, recipient, coins)
+	//if err != nil {
+	//	return err
+	//}
+
+	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// SendSnpClaimRewardHandler handles `Snp_ClaimReward` log
+type SendSnpClaimRewardHandler struct {
+	bankKeeper         types.BankKeeper
+	distributionKeeper types.DistributionKeeper
+	seeleKeeper        Keeper
+}
+
+func NewSendSnpClaimRewardHandler(bankKeeper types.BankKeeper, distributionKeeper types.DistributionKeeper, seeleKeeper Keeper) *SendSnpClaimRewardHandler {
+	return &SendSnpClaimRewardHandler{
+		bankKeeper:         bankKeeper,
+		distributionKeeper: distributionKeeper,
+		seeleKeeper:        seeleKeeper,
+	}
+}
+
+func (h SendSnpClaimRewardHandler) EventID() common.Hash {
+	return SnpClaimRewardEvent.ID
+}
+
+func (h SendSnpClaimRewardHandler) Handle(ctx sdk.Context, contract common.Address, data []byte) error {
+	h.seeleKeeper.Logger(ctx).Info("SendSnpClaimRewardHandler")
+	unpacked, err := SnpUnStakeEvent.Inputs.Unpack(data)
+	if err != nil {
+		// log and ignore
+		h.seeleKeeper.Logger(ctx).Error("log signature matches but failed to decode", "error", err)
+		return err
+	}
+	h.seeleKeeper.Logger(ctx).Info("Event from contract:" + contract.Hex())
+	h.seeleKeeper.Logger(ctx).Info("validator:" + unpacked[0].(common.Address).Hex())
+	h.seeleKeeper.Logger(ctx).Info("delegator:" + unpacked[1].(common.Address).Hex())
+
+	valAddress := sdk.ValAddress(unpacked[0].(common.Address).Bytes())
+	delegator := sdk.AccAddress(unpacked[1].(common.Address).Bytes())
+	h.seeleKeeper.Logger(ctx).Info("valAddress:" + valAddress.String())
+	_, err = h.distributionKeeper.WithdrawDelegationRewards(ctx, delegator, valAddress)
+
+	if err != nil {
+		return err
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, delegator.String()),
+		),
+	)
+
+	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // SendToAccountHandler handles `__SeeleSendToAccount` log
 type SendToAccountHandler struct {
 	bankKeeper  types.BankKeeper
