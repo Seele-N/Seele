@@ -158,7 +158,7 @@ var (
 		StakingModuleBasic{},
 		//staking.AppModuleBasic{},
 		//mint.AppModuleBasic{},
-		distr.AppModuleBasic{},
+		DistributionModuleBasic{}, //distr.AppModuleBasic{},
 		GovModuleBasic{gov.NewAppModuleBasic(getGovProposalHandlers()...)},
 		//gov.NewAppModuleBasic(getGovProposalHandlers()...),
 		params.AppModuleBasic{},
@@ -449,6 +449,8 @@ func New(
 		seelekeeper.NewSendSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
 		seelekeeper.NewSendUnSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
 		seelekeeper.NewSendSnpClaimRewardHandler(app.BankKeeper, app.DistrKeeper, app.SeeleKeeper),
+		seelekeeper.NewSendSnpClaimCommissionHandler(app.BankKeeper, app.DistrKeeper, app.SeeleKeeper),
+		seelekeeper.NewSendReSnpStakeHandler(app.BankKeeper, &stakingKeeper, app.SeeleKeeper),
 	))
 
 	// Create static IBC router, add transfer route, then set and seal it

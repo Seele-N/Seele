@@ -10,6 +10,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
+	"github.com/cosmos/cosmos-sdk/x/distribution"
+	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
@@ -123,6 +126,20 @@ func (CrisisModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(genesisState)
 }
 
+// DistributionModuleBasic Crisis Module Basic
+type DistributionModuleBasic struct {
+	distribution.AppModuleBasic
+}
+
+// DefaultGenesis defaut genesis for extend params
+func (DistributionModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	genesisState := distributiontypes.DefaultGenesisState()
+	genesisState.Params.CommunityTax = sdk.NewDecWithPrec(2, 2)
+	genesisState.Params.BaseProposerReward = sdk.NewDecWithPrec(1, 2)
+	genesisState.Params.BonusProposerReward = sdk.NewDecWithPrec(4, 2)
+	return cdc.MustMarshalJSON(genesisState)
+}
+
 // GovModuleBasic Gov Module Basic
 type GovModuleBasic struct {
 	gov.AppModuleBasic
@@ -152,6 +169,8 @@ type EvmModuleBasic struct {
 func (EvmModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	genesisState := evmtypes.DefaultGenesisState()
 	genesisState.Params.EvmDenom = DefaultMintDenom
+	eips := []int64{2929, 2200, 1884, 1344}
+	genesisState.Params.ExtraEIPs = eips
 	return cdc.MustMarshalJSON(genesisState)
 }
 
