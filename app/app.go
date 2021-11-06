@@ -164,7 +164,7 @@ var (
 		params.AppModuleBasic{},
 		CrisisModuleBasic{},
 		//crisis.AppModuleBasic{},
-		slashing.AppModuleBasic{},
+		SlashingModuleBasic{}, //slashing.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},

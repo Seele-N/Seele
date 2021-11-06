@@ -1,4 +1,5 @@
 {
+  "contractName": "ModuleSRC20",
   "abi": [
     {
         "inputs": [

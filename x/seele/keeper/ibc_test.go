@@ -230,7 +230,7 @@ func (suite *KeeperTestSuite) TestIbcTransferCoins() {
 				// Add support for the IBC token
 				suite.app.SeeleKeeper.SetAutoContractForDenom(suite.ctx, "incorrect", common.HexToAddress("0x11"))
 			},
-			errors.New("incorrect is invalid: ibc cro denom is invalid"),
+			errors.New("incorrect is invalid: ibc seele denom is invalid"),
 			func() {
 			},
 		},

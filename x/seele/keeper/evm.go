@@ -71,6 +71,26 @@ func (k Keeper) CallModuleSRC20(ctx sdk.Context, contract common.Address, method
 	return res.Ret, nil
 }
 
+// DeploySnpDelegate deploy an embed snp delegate contract
+func (k Keeper) DeploySnpDelegate(ctx sdk.Context) (common.Address, error) {
+	ctor, err := types.SnpDelegateContract.ABI.Pack("")
+	if err != nil {
+		return common.Address{}, err
+	}
+	data := types.SnpDelegateContract.Bin
+	data = append(data, ctor...)
+
+	msg, res, err := k.CallEVM(ctx, nil, data, big.NewInt(0))
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	if res.Failed() {
+		return common.Address{}, fmt.Errorf("contract deploy failed: %s", res.Ret)
+	}
+	return crypto.CreateAddress(types.EVMModuleAddress, msg.Nonce()), nil
+}
+
 // DeployModuleSRC20 deploy an embed erc20 contract
 func (k Keeper) DeployModuleSRC20(ctx sdk.Context, denom string) (common.Address, error) {
 	ctor, err := types.ModuleSRC20Contract.ABI.Pack("", denom+" Token", denom, uint8(18))
@@ -111,6 +131,18 @@ func (k Keeper) ConvertCoinFromNativeToSRC20(ctx sdk.Context, sender common.Addr
 		k.SetAutoContractForDenom(ctx, coin.Denom, contract)
 
 		k.Logger(ctx).Info(fmt.Sprintf("contract address %s created for coin denom %s", contract.String(), coin.Denom))
+
+		if coin.Denom == "snp" {
+			contractSnpDelegate, err := k.DeploySnpDelegate(ctx)
+			if err != nil {
+				return err
+			}
+
+			k.SetContractForContractName(ctx, types.SnpDelegateContract.ContractName, contractSnpDelegate)
+
+			k.Logger(ctx).Info(fmt.Sprintf("contract address %s created name %s", contractSnpDelegate.String(), types.SnpDelegateContract.ContractName))
+
+		}
 	}
 	err = k.bankKeeper.SendCoins(ctx, sdk.AccAddress(sender.Bytes()), sdk.AccAddress(contract.Bytes()), sdk.NewCoins(coin))
 	if err != nil {

@@ -36,8 +36,9 @@ func (s *ByteString) UnmarshalJSON(data []byte) error {
 
 // CompiledContract contains compiled bytecode and abi
 type CompiledContract struct {
-	ABI abi.ABI
-	Bin ByteString
+	ContractName string
+	ABI          abi.ABI
+	Bin          ByteString
 }
 
 const EVMModuleName = "seele-evm"
@@ -49,19 +50,42 @@ var (
 	// ModuleSRC20Contract is the compiled seele erc20 contract
 	ModuleSRC20Contract CompiledContract
 
+	//go:embed contracts/SnpDelegate.json
+	snpDelegateJSON []byte
+
+	// SnpDelegateContract is the compiled Snp Delegate contract
+	SnpDelegateContract CompiledContract
+
 	// EVMModuleAddress is the native module address for EVM
 	EVMModuleAddress common.Address
 )
 
 func init() {
 	EVMModuleAddress = common.BytesToAddress(authtypes.NewModuleAddress(EVMModuleName).Bytes())
-	fmt.Printf("seele-evm module address:%s\n", EVMModuleAddress.String())
+	/*
+		fmt.Printf("seele-evm module address:%s\n", EVMModuleAddress.String())
+		add := crypto.CreateAddress(EVMModuleAddress, 0)
+		fmt.Printf("noce=0;seele-evm module contract address:%s\n", add.String())
+		add = crypto.CreateAddress(EVMModuleAddress, 1)
+		fmt.Printf("noce=1;seele-evm module contract address:%s\n", add.String())
+		add = crypto.CreateAddress(EVMModuleAddress, 2)
+		fmt.Printf("noce=2;seele-evm module contract address:%s\n", add.String())
+	*/
 	err := json.Unmarshal(seeleERC20JSON, &ModuleSRC20Contract)
 	if err != nil {
 		panic(err)
 	}
 
 	if len(ModuleSRC20Contract.Bin) == 0 {
-		panic("load contract failed")
+		panic("load src20 contract failed")
+	}
+
+	err = json.Unmarshal(snpDelegateJSON, &SnpDelegateContract)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(SnpDelegateContract.Bin) == 0 {
+		panic("load snp delegate contract failed")
 	}
 }

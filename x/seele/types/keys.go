@@ -24,13 +24,15 @@ const (
 	prefixDenomToExternalContract = iota + 1
 	prefixDenomToAutoContract
 	prefixContractToDenom
+	prefixContractNameToContractAddress
 )
 
 // KVStore key prefixes
 var (
-	KeyPrefixDenomToExternalContract = []byte{prefixDenomToExternalContract}
-	KeyPrefixDenomToAutoContract     = []byte{prefixDenomToAutoContract}
-	KeyPrefixContractToDenom         = []byte{prefixContractToDenom}
+	KeyPrefixDenomToExternalContract       = []byte{prefixDenomToExternalContract}
+	KeyPrefixDenomToAutoContract           = []byte{prefixDenomToAutoContract}
+	KeyPrefixContractToDenom               = []byte{prefixContractToDenom}
+	KeyPrefixContractNameToContractAddress = []byte{prefixContractNameToContractAddress}
 )
 
 // this line is used by starport scaffolding # ibc/keys/port
@@ -48,4 +50,9 @@ func DenomToAutoContractKey(denom string) []byte {
 // ContractToDenomKey defines the store key for contract to denom reverse index
 func ContractToDenomKey(contract []byte) []byte {
 	return append(KeyPrefixContractToDenom, contract...)
+}
+
+// ContractNameToContractAddressKey defines the store key for contractname to auto contract address mapping
+func ContractNameToContractAddressKey(contractname string) []byte {
+	return append(KeyPrefixContractNameToContractAddress, contractname...)
 }

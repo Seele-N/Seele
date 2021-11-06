@@ -176,3 +176,27 @@ func (k Keeper) SetAutoContractForDenom(ctx sdk.Context, denom string, address c
 	store.Set(types.DenomToAutoContractKey(denom), address.Bytes())
 	store.Set(types.ContractToDenomKey(address.Bytes()), []byte(denom))
 }
+
+func (k Keeper) SetContractForContractName(ctx sdk.Context, contractname string, address common.Address) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.ContractNameToContractAddressKey(contractname), address.Bytes())
+}
+
+// GetContractByName find the corresponding contract for the contractname,
+func (k Keeper) GetContractByName(ctx sdk.Context, contractname string) (contract common.Address, found bool) {
+
+	contract, found = k.getContractByname(ctx, contractname)
+
+	return
+}
+
+// getAutoContractByDenom find the corresponding auto-deployed contract for the denom,
+func (k Keeper) getContractByname(ctx sdk.Context, name string) (common.Address, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ContractNameToContractAddressKey(name))
+	if len(bz) == 0 {
+		return common.Address{}, false
+	}
+
+	return common.BytesToAddress(bz), true
+}
