@@ -186,6 +186,7 @@ var (
 		distrtypes.ModuleName:      nil,
 		//minttypes.ModuleName:           {authtypes.Minter},
 		mintxtypes.ModuleName:          {authtypes.Minter},
+		stakingtypes.ModuleName:        {authtypes.Burner, authtypes.Staking},
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
