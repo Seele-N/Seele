@@ -25,6 +25,7 @@ const (
 	prefixDenomToAutoContract
 	prefixContractToDenom
 	prefixContractNameToContractAddress
+	prefixExternalContractToDenom
 )
 
 // KVStore key prefixes
@@ -33,6 +34,7 @@ var (
 	KeyPrefixDenomToAutoContract           = []byte{prefixDenomToAutoContract}
 	KeyPrefixContractToDenom               = []byte{prefixContractToDenom}
 	KeyPrefixContractNameToContractAddress = []byte{prefixContractNameToContractAddress}
+	KeyprefixExternalContractToDenom       = []byte{prefixExternalContractToDenom}
 )
 
 // this line is used by starport scaffolding # ibc/keys/port
@@ -40,6 +42,11 @@ var (
 // DenomToExternalContractKey defines the store key for denom to contract mapping
 func DenomToExternalContractKey(denom string) []byte {
 	return append(KeyPrefixDenomToExternalContract, denom...)
+}
+
+// ExternalContractToDenomKey defines the store key for External contract to denom mapping
+func ExternalContractToDenomKey(contract string) []byte {
+	return append(KeyprefixExternalContractToDenom, contract...)
 }
 
 // DenomToAutoContractKey defines the store key for denom to auto contract mapping

@@ -31,78 +31,7 @@ func GetTxCmd() *cobra.Command {
 
 	// this line is used by starport scaffolding # 1
 
-	cmd.AddCommand(CmdConvertTokens())
-	cmd.AddCommand(CmdSendToCryptoOrg())
 	cmd.AddCommand(CmdUpdateTokenMapping())
-
-	return cmd
-}
-
-func CmdConvertTokens() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "convert-vouchers [address] [amount]",
-		Short: "Convert ibc vouchers to seele tokens, Note, the'--from' flag is" +
-			" ignored as it is implied from [address].`",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			err := cmd.Flags().Set(flags.FlagFrom, args[0])
-			if err != nil {
-				return err
-			}
-			coins, err := sdk.ParseCoinsNormalized(args[1])
-			if err != nil {
-				return err
-			}
-
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			msg := types.NewMsgConvertVouchers(clientCtx.GetFromAddress().String(), coins)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-
-	return cmd
-}
-
-func CmdSendToCryptoOrg() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "transfer-tokens [from] [to] [amount]",
-		Short: "Transfer seele tokens to the origin chain through IBC , Note, the'--from' flag is" +
-			" ignored as it is implied from [from].`",
-		Args: cobra.ExactArgs(3),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			err := cmd.Flags().Set(flags.FlagFrom, args[0])
-			if err != nil {
-				return err
-			}
-			argsTo := args[1]
-			coins, err := sdk.ParseCoinsNormalized(args[2])
-			if err != nil {
-				return err
-			}
-
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			msg := types.NewMsgTransferTokens(clientCtx.GetFromAddress().String(), argsTo, coins)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }

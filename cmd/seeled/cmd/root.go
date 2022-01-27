@@ -39,6 +39,8 @@ import (
 	servercfg "github.com/tharsis/ethermint/server/config"
 	ethermint "github.com/tharsis/ethermint/types"
 
+	seelecli "github.com/Seele-N/Seele/x/seele/client/cli"
+
 	"github.com/Seele-N/Seele/app"
 	// this line is used by starport scaffolding # stargate/root/import
 )
@@ -129,6 +131,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		queryCommand(),
 		txCommand(),
 		ethermintclient.KeyCommands(app.DefaultNodeHome),
+		seelecli.GetTxCmd(),
 	)
 
 	// add rosetta

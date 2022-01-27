@@ -5,7 +5,6 @@ import (
 
 	"github.com/Seele-N/Seele/x/seele/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -61,11 +60,13 @@ func (k msgServer) TransferTokens(goCtx context.Context, msg *types.MsgTransferT
 // UpdateTokenMapping implements the grpc method
 func (k msgServer) UpdateTokenMapping(goCtx context.Context, msg *types.MsgUpdateTokenMapping) (*types.MsgUpdateTokenMappingResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	admin := k.Keeper.GetParams(ctx).SeeleAdmin
-	// if admin is empty, no sender could be equal to it
-	if admin != msg.Sender {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "msg sender is authorized")
-	}
+	/*
+		admin := k.Keeper.GetParams(ctx).SeeleAdmin
+		// if admin is empty, no sender could be equal to it
+		if admin != msg.Sender {
+			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "msg sender is authorized")
+		}
+	*/
 	// msg is already validated
 	k.Keeper.SetExternalContractForDenom(ctx, msg.Denom, common.HexToAddress(msg.Contract))
 	return &types.MsgUpdateTokenMappingResponse{}, nil

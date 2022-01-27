@@ -70,7 +70,12 @@ func init() {
 		fmt.Printf("noce=1;seele-evm module contract address:%s\n", add.String())
 		add = crypto.CreateAddress(EVMModuleAddress, 2)
 		fmt.Printf("noce=2;seele-evm module contract address:%s\n", add.String())
+		add = crypto.CreateAddress(EVMModuleAddress, 3)
+		fmt.Printf("noce=3;seele-evm module contract address:%s\n", add.String())
+		add = crypto.CreateAddress(EVMModuleAddress, 4)
+		fmt.Printf("noce=4;seele-evm module contract address:%s\n", add.String())
 	*/
+
 	err := json.Unmarshal(seeleERC20JSON, &ModuleSRC20Contract)
 	if err != nil {
 		panic(err)

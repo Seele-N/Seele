@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -92,8 +93,8 @@ func (k Keeper) DeploySnpDelegate(ctx sdk.Context) (common.Address, error) {
 }
 
 // DeployModuleSRC20 deploy an embed erc20 contract
-func (k Keeper) DeployModuleSRC20(ctx sdk.Context, denom string) (common.Address, error) {
-	ctor, err := types.ModuleSRC20Contract.ABI.Pack("", denom+" Token", denom, uint8(18))
+func (k Keeper) DeployModuleSRC20(ctx sdk.Context, denom string, decimals uint8) (common.Address, error) {
+	ctor, err := types.ModuleSRC20Contract.ABI.Pack("", denom+" Token", denom, decimals)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -112,19 +113,30 @@ func (k Keeper) DeployModuleSRC20(ctx sdk.Context, denom string) (common.Address
 }
 
 // ConvertCoinFromNativeToSRC20 convert native token to erc20 token
-func (k Keeper) ConvertCoinFromNativeToSRC20(ctx sdk.Context, sender common.Address, coin sdk.Coin, autoDeploy bool) error {
+func (k Keeper) ConvertCoinFromNativeToSRC20(ctx sdk.Context, tokenContract string, sender common.Address, coin sdk.Coin, autoDeploy bool) error {
 	if !types.IsValidDenomToWrap(coin.Denom) {
 		return fmt.Errorf("coin %s is not supported for wrapping", coin.Denom)
 	}
 
 	var err error
+
+	// external contract and denom map
+	Denom, findedDenom := k.getExternalDenomByContract(ctx, tokenContract)
 	// external contract is returned in preference to auto-deployed ones
 	contract, found := k.GetContractByDenom(ctx, coin.Denom)
 	if !found {
 		if !autoDeploy {
 			return fmt.Errorf("no contract found for the denom %s", coin.Denom)
 		}
-		contract, err = k.DeployModuleSRC20(ctx, coin.Denom)
+		if !findedDenom {
+			Denom = coin.Denom
+		}
+		decimals := uint8(18)
+		if strings.EqualFold(tokenContract, "0xdAC17F958D2ee523a2206206994597C13D831ec7") { // Fixme hard code for USDT
+			decimals = uint8(6)
+			Denom = "USDT"
+		}
+		contract, err = k.DeployModuleSRC20(ctx, Denom, decimals)
 		if err != nil {
 			return err
 		}
@@ -182,9 +194,9 @@ func (k Keeper) ConvertCoinFromSRC20ToNative(ctx sdk.Context, contract common.Ad
 }
 
 // ConvertCoinsFromNativeToSRC20 convert native tokens to erc20 tokens
-func (k Keeper) ConvertCoinsFromNativeToSRC20(ctx sdk.Context, sender common.Address, coins sdk.Coins, autoDeploy bool) error {
+func (k Keeper) ConvertCoinsFromNativeToSRC20(ctx sdk.Context, contract string, sender common.Address, coins sdk.Coins, autoDeploy bool) error {
 	for _, coin := range coins {
-		if err := k.ConvertCoinFromNativeToSRC20(ctx, sender, coin, autoDeploy); err != nil {
+		if err := k.ConvertCoinFromNativeToSRC20(ctx, contract, sender, coin, autoDeploy); err != nil {
 			return err
 		}
 	}

@@ -12,7 +12,7 @@ func (suite *KeeperTestSuite) TestDeployContract() {
 	suite.SetupTest()
 	keeper := suite.app.SeeleKeeper
 
-	_, err := keeper.DeployModuleSRC20(suite.ctx, "test")
+	_, err := keeper.DeployModuleSRC20(suite.ctx, "test", uint8(18))
 	suite.Require().NoError(err)
 }
 
@@ -35,7 +35,7 @@ func (suite *KeeperTestSuite) TestTokenConversion() {
 	suite.Require().NoError(err)
 
 	// send to erc20
-	err = keeper.ConvertCoinsFromNativeToSRC20(suite.ctx, address, coins, true)
+	err = keeper.ConvertCoinsFromNativeToSRC20(suite.ctx, "", address, coins, true)
 	suite.Require().NoError(err)
 
 	// check erc20 balance

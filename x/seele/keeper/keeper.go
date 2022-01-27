@@ -87,6 +87,17 @@ func (k Keeper) getExternalContractByDenom(ctx sdk.Context, denom string) (commo
 	return common.BytesToAddress(bz), true
 }
 
+// getExternalDenomByContract find the corresponding denom for external contract,
+func (k Keeper) getExternalDenomByContract(ctx sdk.Context, contract string) (string, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ExternalContractToDenomKey(contract))
+	if len(bz) == 0 {
+		return "", false
+	}
+
+	return string(bz), true
+}
+
 // getAutoContractByDenom find the corresponding auto-deployed contract for the denom,
 func (k Keeper) getAutoContractByDenom(ctx sdk.Context, denom string) (common.Address, bool) {
 	store := ctx.KVStore(k.storeKey)
@@ -101,10 +112,9 @@ func (k Keeper) getAutoContractByDenom(ctx sdk.Context, denom string) (common.Ad
 // GetContractByDenom find the corresponding contract for the denom,
 // external contract is taken in preference to auto-deployed one
 func (k Keeper) GetContractByDenom(ctx sdk.Context, denom string) (contract common.Address, found bool) {
-	contract, found = k.getExternalContractByDenom(ctx, denom)
-	if !found {
-		contract, found = k.getAutoContractByDenom(ctx, denom)
-	}
+
+	contract, found = k.getAutoContractByDenom(ctx, denom)
+
 	return
 }
 
@@ -122,13 +132,18 @@ func (k Keeper) GetDenomByContract(ctx sdk.Context, contract common.Address) (de
 // SetExternalContractForDenom set the external contract for native denom, replace the old one if any existing.
 func (k Keeper) SetExternalContractForDenom(ctx sdk.Context, denom string, address common.Address) {
 	store := ctx.KVStore(k.storeKey)
-	existing, found := k.getExternalContractByDenom(ctx, denom)
-	if found {
-		// remove existing mapping
-		store.Delete(types.ContractToDenomKey(existing.Bytes()))
-	}
+	/*
+		existing, found := k.getExternalContractByDenom(ctx, denom)
+		if found {
+			// remove existing mapping
+			store.Delete(types.ContractToDenomKey(existing.Bytes()))
+			//store.Delete(types.ContractToDenomKey(existing.Bytes()))
+		}
+	*/
 	store.Set(types.DenomToExternalContractKey(denom), address.Bytes())
-	store.Set(types.ContractToDenomKey(address.Bytes()), []byte(denom))
+	store.Set(types.ExternalContractToDenomKey(address.Hex()), []byte(denom))
+
+	//store.Set(types.ContractToDenomKey(address.Bytes()), []byte(denom))
 }
 
 // GetExternalContracts returns all external contract mappings
